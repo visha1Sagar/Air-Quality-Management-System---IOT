@@ -14,7 +14,7 @@
 // Azure IoT Gub Device ID
 #define IOT_CONFIG_DEVICE_ID "ESP32"
 // Azure IoT Hub Device Key (primary key)
-#define IOT_CONFIG_DEVICE_KEY "Fn9KGECzSVxWuaRy/JL0OKQsoIj7HLzoqqwT75HmdTQ="
+#define IOT_CONFIG_DEVICE_KEY ""
 
 // Publish 1 message every 5 seconds
 #define TELEMETRY_FREQUENCY_MILLISECS 5000
