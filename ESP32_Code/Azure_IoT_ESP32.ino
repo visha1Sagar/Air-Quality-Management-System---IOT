@@ -83,7 +83,6 @@ static char mqtt_client_id[128];
 static char mqtt_username[128];
 static char mqtt_password[200];
 static uint8_t sas_signature_buffer[256];
-static unsigned long next_telemetry_send_time_ms = 0;
 static char telemetry_topic[128];
 static uint32_t telemetry_send_count = 0;
 static String telemetry_payload = "";
