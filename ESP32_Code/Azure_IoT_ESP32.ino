@@ -44,6 +44,9 @@ int totalCOValue = 0;
 
 int count = 0;
 
+unsigned long next_telemetry_send_time_ms = 0;
+unsigned long next_data_collection_time_ms = 0;
+
 /****************************************************************************************************/
 
 // When developing for your own Arduino-based platform,
@@ -414,50 +417,64 @@ void setup()
 
 void loop()
 {
-  if (WiFi.status() != WL_CONNECTED){ connectToWiFi(); }
+  unsigned long current_time_ms = millis();
 
-  else if (millis() > next_telemetry_send_time_ms)
-  {
-    // Sending Data to Azure IoT Hub
-    sendTelemetry();
-    next_telemetry_send_time_ms = millis() + TELEMETRY_FREQUENCY_MILLISECS;
-    totalHumidity = 0.0f;
-    totalTemperature = 0.0f;
-    totalGasValue = 0;
-    totalCOValue = 0;
-    count = 0;
+  // Check Wi-Fi connection
+  if (WiFi.status() != WL_CONNECTED) {
+    connectToWiFi();
+    return;
   }
 
-  else {
+  // Check if it's time to collect data (every 30 seconds)
+  if (current_time_ms >= next_data_collection_time_ms) {
+    // Sense sensor values
     humidity = dht.readHumidity();
     temperature = dht.readTemperature();
 
     if (isnan(humidity) || isnan(temperature)) {
       Serial.println(F("Failed to read from DHT sensor!"));
-      return;
+    } else {
+      gasValue = analogRead(AO_PIN_2);
+      COValue = analogRead(AO_PIN_7);
+
+      totalTemperature += temperature;
+      totalHumidity += humidity;
+      totalGasValue += gasValue;
+      totalCOValue += COValue;
+      count++;
+
+      // Log the values
+      Serial.print("Temperature: ");
+      Serial.print(temperature);
+      Serial.print("°C, Humidity: ");
+      Serial.print(humidity);
+      Serial.println("%");
+
+      Serial.print("Smoke (MQ2) Value: ");
+      Serial.println(gasValue);
+
+      Serial.print("CO (MQ7) Value: ");
+      Serial.println(COValue);
     }
 
-    gasValue = analogRead(AO_PIN_2);
-    COValue = analogRead(AO_PIN_7);
+    // Schedule the next data collection
+    next_data_collection_time_ms = current_time_ms + DATA_COLLECTION_INTERVAL_MILLISECS;
+  }
 
-    totalTemperature += temperature;
-    totalHumidity += humidity;
-    totalGasValue += gasValue;
-    totalCOValue += COValue;
-    count++;
+  // Check if it's time to send telemetry (every 2 minutes)
+  if (current_time_ms >= next_telemetry_send_time_ms) {
+    if (count > 0) {
+      // Replace sendTelemetry() with your telemetry function
+      sendTelemetry();
 
-    Serial.print("Temperature: ");
-    Serial.print(temperature);
-    Serial.print("°C, Humidity: ");
-    Serial.print(humidity);
-    Serial.println("%");
+      totalHumidity = 0.0f;
+      totalTemperature = 0.0f;
+      totalGasValue = 0;
+      totalCOValue = 0;
+      count = 0;
+    }
 
-    Serial.print("Smoke (MQ2) Value: ");
-    Serial.println(gasValue);
-
-    Serial.print("CO (MQ7) Value: ");
-    Serial.println(COValue);
-
-    delay(30000);
+    // Schedule the next telemetry send
+    next_telemetry_send_time_ms = current_time_ms + TELEMETRY_FREQUENCY_MILLISECS;
   }
 }
