@@ -12,5 +12,5 @@
 // Azure IoT Hub Device Key (primary key)
 #define IOT_CONFIG_DEVICE_KEY ""
 
-// Publish 1 message every 5 seconds
-#define TELEMETRY_FREQUENCY_MILLISECS 5000
+// Publish 1 message every 10 seconds
+#define TELEMETRY_FREQUENCY_MILLISECS 10000
