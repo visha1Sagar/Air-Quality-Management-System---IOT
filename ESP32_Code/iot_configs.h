@@ -1,12 +1,8 @@
-/*****************************************************************************************************************************
-**********************************    Author  : Ehab Magdy Abdullah                      *************************************
-**********************************    Linkedin: https://www.linkedin.com/in/ehabmagdyy/  *************************************
-**********************************    Youtube : https://www.youtube.com/@EhabMagdyy      *************************************
-******************************************************************************************************************************/
+
 
 // Enter Your Wifi and Password
-#define IOT_CONFIG_WIFI_SSID "Redmi Note 13 Pro"
-#define IOT_CONFIG_WIFI_PASSWORD "lotus555"
+#define IOT_CONFIG_WIFI_SSID ""
+#define IOT_CONFIG_WIFI_PASSWORD ""
 
 
 // Azure IoT Hub
