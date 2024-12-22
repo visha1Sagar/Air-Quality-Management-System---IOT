@@ -37,6 +37,13 @@ float temperature = 0.0f;
 int gasValue = 0;
 int COValue = 0;
 
+float totalHumidity = 0.0f;
+float totalTemperature = 0.0f;
+int totalGasValue = 0;
+int totalCOValue = 0;
+
+int count = 0;
+
 /****************************************************************************************************/
 
 // When developing for your own Arduino-based platform,
@@ -344,10 +351,10 @@ static void generateTelemetryPayload()
 {
   /************************************  Write Sensors Data ************************************/
   telemetry_payload = "{ \"msgCount\": " + String(telemetry_send_count++) +
-                      ", \"Temperature\": " + String(temperature) +
-                      ", \"Humidity\": " + String(humidity) +
-                      ", \"gasValue\": " + String(gasValue) +
-                      ", \"COValue\": " + String(COValue) + " }";
+                      ", \"Temperature\": " + String(totalTemperature/count) +
+                      ", \"Humidity\": " + String(totalHumidity/count) +
+                      ", \"gasValue\": " + String(totalGasValue/count) +
+                      ", \"COValue\": " + String(totalCOValue/count) + " }";
   /*********************************************************************************************/
 }
 
@@ -411,33 +418,46 @@ void loop()
 
   else if (millis() > next_telemetry_send_time_ms)
   {
-  humidity = dht.readHumidity();
-  temperature = dht.readTemperature();
-
-  if (isnan(humidity) || isnan(temperature)) {
-    Serial.println(F("Failed to read from DHT sensor!"));
-    return;
-  }
-
-  gasValue = analogRead(AO_PIN_2);
-  COValue = analogRead(AO_PIN_7);
-
-  Serial.print("Temperature: ");
-  Serial.print(temperature);
-  Serial.print("°C, Humidity: ");
-  Serial.print(humidity);
-  Serial.println("%");
-
-  Serial.print("Smoke (MQ2) Value: ");
-  Serial.println(gasValue);
-
-  Serial.print("CO (MQ7) Value: ");
-  Serial.println(COValue);
-
     // Sending Data to Azure IoT Hub
     sendTelemetry();
     next_telemetry_send_time_ms = millis() + TELEMETRY_FREQUENCY_MILLISECS;
+    totalHumidity = 0.0f;
+    totalTemperature = 0.0f;
+    totalGasValue = 0;
+    totalCOValue = 0;
+    count = 0;
   }
-  
-  delay(5000);
+
+  else {
+    humidity = dht.readHumidity();
+    temperature = dht.readTemperature();
+
+    if (isnan(humidity) || isnan(temperature)) {
+      Serial.println(F("Failed to read from DHT sensor!"));
+      return;
+    }
+
+    gasValue = analogRead(AO_PIN_2);
+    COValue = analogRead(AO_PIN_7);
+
+    totalTemperature += temperature;
+    totalHumidity += humidity;
+    totalGasValue += gasValue;
+    totalCOValue += COValue;
+    count++;
+
+    Serial.print("Temperature: ");
+    Serial.print(temperature);
+    Serial.print("°C, Humidity: ");
+    Serial.print(humidity);
+    Serial.println("%");
+
+    Serial.print("Smoke (MQ2) Value: ");
+    Serial.println(gasValue);
+
+    Serial.print("CO (MQ7) Value: ");
+    Serial.println(COValue);
+
+    delay(30000);
+  }
 }
